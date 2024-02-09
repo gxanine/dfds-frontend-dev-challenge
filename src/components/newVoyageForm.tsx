@@ -38,7 +38,7 @@ const formSchema = z
     portOfLoading: z.string().trim().min(1),
     portOfDischarge: z.string().trim().min(1),
     vessel: z.string().trim().min(1),
-    unitTypes: z.array(z.string()).nonempty(),
+    unitTypes: z.array(z.string()).nonempty().min(5),
   })
   .required()
   .refine(
