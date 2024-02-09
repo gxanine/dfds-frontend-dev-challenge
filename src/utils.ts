@@ -18,3 +18,18 @@ export async function fetchData(path: string) {
 
   return response.json();
 }
+
+export function mergeTimeAndDate(time: string, date: Date): Date {
+  const timeSplit = time.split(":");
+  const hours = parseInt(timeSplit[0] ?? "0", 10);
+  const minutes = parseInt(timeSplit[1] ?? "0", 10);
+  const seconds = parseInt(timeSplit[2] ?? "0", 10);
+  return new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+    hours,
+    minutes,
+    seconds,
+  );
+}
