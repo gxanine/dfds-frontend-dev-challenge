@@ -61,7 +61,7 @@ export default function NewVoyageSheet() {
         <SheetTrigger asChild>
           <Button>Create</Button>
         </SheetTrigger>
-        <SheetContent>
+        <SheetContent className="overflow-y-auto">
           <SheetHeader>
             <SheetTitle>Create a new voyage</SheetTitle>
             <SheetDescription>
