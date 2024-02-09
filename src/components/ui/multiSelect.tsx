@@ -47,7 +47,7 @@ export default function MultiSelect(props: {
             role="combobox"
             className={cn(
               "h-auto justify-between text-left",
-              !props.value && "text-muted-foreground",
+              props.value.length < 1 && "text-muted-foreground",
             )}
           >
             <div className="flex flex-wrap gap-1">
