@@ -20,22 +20,13 @@ import type { ReturnType } from "./api/voyage/getAll";
 import { Button } from "~/components/ui/button";
 import { TABLE_DATE_FORMAT } from "~/constants";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "~/components/ui/sheet";
-import { useState } from "react";
-import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "~/components/ui/popover";
 import { toast } from "~/components/ui/use-toast";
-import NewVoyageForm, { VoyageCandidate } from "~/components/newVoyageForm";
 import UnitTypesList from "~/components/unitTypeList";
+import NewVoyageSheet from "~/components/newVoyageSheet";
 
 export default function Home() {
   const { data: voyages } = useQuery<ReturnType>({
@@ -69,42 +60,8 @@ export default function Home() {
     },
   });
 
-  const newVoyageMutation = useMutation({
-    mutationFn: async (voyage: VoyageCandidate) => {
-      const response = await fetch("/api/voyage/create", {
-        method: "POST",
-        body: JSON.stringify(voyage),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!response.ok) throw new Error("New voyage could not be created.");
-    },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries([
-        "voyages",
-      ] as InvalidateQueryFilters);
-      toast({
-        title: "Success!",
-        description: "New voyage  has been created!",
-      });
-    },
-    onError: async (err) => {
-      toast({
-        variant: "destructive",
-        title: "Oops!",
-        description: err.message,
-      });
-    },
-  });
-
   const handleDelete = (voyageId: string) => {
     deleteVoyageMutation.mutate(voyageId);
-  };
-
-  const handleNew = (voyage: VoyageCandidate) => {
-    newVoyageMutation.mutate(voyage);
   };
 
   return (
@@ -115,7 +72,7 @@ export default function Home() {
       </Head>
       <Layout>
         <div className="m-5 flex flex-col self-start">
-          <NewVoyageSheet handleNew={handleNew} />
+          <NewVoyageSheet />
         </div>
         <Table>
           <TableHeader>
@@ -167,36 +124,6 @@ export default function Home() {
           </TableBody>
         </Table>
       </Layout>
-    </>
-  );
-}
-
-function NewVoyageSheet(props: {
-  handleNew: (voyage: VoyageCandidate) => void;
-}) {
-  const [isOpen, setIsOpen] = useState(false);
-
-  function handleSubmit(voyage: VoyageCandidate) {
-    props.handleNew(voyage);
-    setIsOpen(false);
-  }
-
-  return (
-    <>
-      <Sheet open={isOpen} onOpenChange={setIsOpen}>
-        <SheetTrigger asChild>
-          <Button>Create</Button>
-        </SheetTrigger>
-        <SheetContent>
-          <SheetHeader>
-            <SheetTitle>Create a new voyage</SheetTitle>
-            <SheetDescription>
-              This will create a brand new voyage
-            </SheetDescription>
-          </SheetHeader>
-          <NewVoyageForm onSubmit={handleSubmit} />
-        </SheetContent>
-      </Sheet>
     </>
   );
 }
