@@ -28,8 +28,14 @@ import {
   SheetTrigger,
 } from "~/components/ui/sheet";
 import { useState } from "react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "~/components/ui/popover";
 import { toast } from "~/components/ui/use-toast";
 import NewVoyageForm, { VoyageCandidate } from "~/components/newVoyageForm";
+import UnitTypesList from "~/components/unitTypeList";
 
 export default function Home() {
   const { data: voyages } = useQuery<ReturnType>({
@@ -111,6 +117,7 @@ export default function Home() {
               <TableHead>Port of loading</TableHead>
               <TableHead>Port of discharge</TableHead>
               <TableHead>Vessel</TableHead>
+              <TableHead>Unit types</TableHead>
               <TableHead>&nbsp;</TableHead>
             </TableRow>
           </TableHeader>
@@ -120,7 +127,7 @@ export default function Home() {
                 <TableCell>
                   {format(
                     new Date(voyage.scheduledDeparture),
-                    TABLE_DATE_FORMAT
+                    TABLE_DATE_FORMAT,
                   )}
                 </TableCell>
                 <TableCell>
@@ -129,6 +136,16 @@ export default function Home() {
                 <TableCell>{voyage.portOfLoading}</TableCell>
                 <TableCell>{voyage.portOfDischarge}</TableCell>
                 <TableCell>{voyage.vessel.name}</TableCell>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <TableCell className="cursor-pointer">
+                      {voyage.unitTypes.length}
+                    </TableCell>
+                  </PopoverTrigger>
+                  <PopoverContent>
+                    <UnitTypesList unitTypes={voyage.unitTypes} />
+                  </PopoverContent>
+                </Popover>
                 <TableCell>
                   <Button
                     onClick={() => handleDelete(voyage.id)}
