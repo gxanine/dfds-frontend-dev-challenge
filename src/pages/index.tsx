@@ -1,4 +1,9 @@
-import { InvalidateQueryFilters, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  InvalidateQueryFilters,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { format } from "date-fns";
 import Head from "next/head";
 import Layout from "~/components/layout";
@@ -14,18 +19,24 @@ import { fetchData } from "~/utils";
 import type { ReturnType } from "./api/voyage/getAll";
 import { Button } from "~/components/ui/button";
 import { TABLE_DATE_FORMAT } from "~/constants";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "~/components/ui/popover";
+import { toast } from "~/components/ui/use-toast";
+import UnitTypesList from "~/components/unitTypeList";
+import NewVoyageSheet from "~/components/newVoyageSheet";
 
 export default function Home() {
   const { data: voyages } = useQuery<ReturnType>({
     queryKey: ["voyages"],
 
-    queryFn: () =>
-      fetchData("voyage/getAll")
+    queryFn: () => fetchData("voyage/getAll"),
   });
 
-
   const queryClient = useQueryClient();
-  const mutation = useMutation({
+  const deleteVoyageMutation = useMutation({
     mutationFn: async (voyageId: string) => {
       const response = await fetch(`/api/voyage/delete?id=${voyageId}`, {
         method: "DELETE",
@@ -35,14 +46,22 @@ export default function Home() {
         throw new Error("Failed to delete the voyage");
       }
     },
-   	onSuccess: async () => {
-        await queryClient.invalidateQueries(["voyages"] as InvalidateQueryFilters);
-      },
-    }
-  );
+    onSuccess: async () => {
+      await queryClient.invalidateQueries([
+        "voyages",
+      ] as InvalidateQueryFilters);
+    },
+    onError: async (err) => {
+      toast({
+        variant: "destructive",
+        title: "Oops!",
+        description: err.message,
+      });
+    },
+  });
 
   const handleDelete = (voyageId: string) => {
-    mutation.mutate(voyageId);
+    deleteVoyageMutation.mutate(voyageId);
   };
 
   return (
@@ -52,6 +71,9 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Layout>
+        <div className="m-5 flex flex-col self-start">
+          <NewVoyageSheet />
+        </div>
         <Table>
           <TableHeader>
             <TableRow>
@@ -60,6 +82,7 @@ export default function Home() {
               <TableHead>Port of loading</TableHead>
               <TableHead>Port of discharge</TableHead>
               <TableHead>Vessel</TableHead>
+              <TableHead>Unit types</TableHead>
               <TableHead>&nbsp;</TableHead>
             </TableRow>
           </TableHeader>
@@ -69,7 +92,7 @@ export default function Home() {
                 <TableCell>
                   {format(
                     new Date(voyage.scheduledDeparture),
-                    TABLE_DATE_FORMAT
+                    TABLE_DATE_FORMAT,
                   )}
                 </TableCell>
                 <TableCell>
@@ -78,6 +101,16 @@ export default function Home() {
                 <TableCell>{voyage.portOfLoading}</TableCell>
                 <TableCell>{voyage.portOfDischarge}</TableCell>
                 <TableCell>{voyage.vessel.name}</TableCell>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <TableCell className="cursor-pointer">
+                      {voyage.unitTypes.length}
+                    </TableCell>
+                  </PopoverTrigger>
+                  <PopoverContent>
+                    <UnitTypesList unitTypes={voyage.unitTypes} />
+                  </PopoverContent>
+                </Popover>
                 <TableCell>
                   <Button
                     onClick={() => handleDelete(voyage.id)}
