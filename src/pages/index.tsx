@@ -44,9 +44,8 @@ export default function Home() {
     queryFn: () => fetchData("voyage/getAll"),
   });
 
-
   const queryClient = useQueryClient();
-  const mutation = useMutation({
+  const deleteVoyageMutation = useMutation({
     mutationFn: async (voyageId: string) => {
       const response = await fetch(`/api/voyage/delete?id=${voyageId}`, {
         method: "DELETE",
@@ -56,11 +55,19 @@ export default function Home() {
         throw new Error("Failed to delete the voyage");
       }
     },
-   	onSuccess: async () => {
-        await queryClient.invalidateQueries(["voyages"] as InvalidateQueryFilters);
-      },
-    }
-  );
+    onSuccess: async () => {
+      await queryClient.invalidateQueries([
+        "voyages",
+      ] as InvalidateQueryFilters);
+    },
+    onError: async (err) => {
+      toast({
+        variant: "destructive",
+        title: "Oops!",
+        description: err.message,
+      });
+    },
+  });
 
   const newVoyageMutation = useMutation({
     mutationFn: async (voyage: VoyageCandidate) => {
@@ -93,7 +100,8 @@ export default function Home() {
   });
 
   const handleDelete = (voyageId: string) => {
-    mutation.mutate(voyageId);
+    deleteVoyageMutation.mutate(voyageId);
+  };
 
   const handleNew = (voyage: VoyageCandidate) => {
     newVoyageMutation.mutate(voyage);
